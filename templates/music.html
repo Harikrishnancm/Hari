@@ -1,0 +1,86 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width= , initial-scale=1.0" />
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <script src="https://kit.fontawesome.com/42c33b2d83.js" crossorigin="anonymous"></script>
+  <title>Document</title>
+</head>
+<body>
+  <div class="container">
+    <div class="music-player">
+      <nav>
+        <div class="circle">
+          <i class="fa-solid fa-angle-left"></i>
+        </div>
+        <div><h1>Now Playing</h1></div>
+        <div class="circle">
+          <a href=""><i class="fa-solid fa-bars"></i></a>
+        </div>
+      </nav>
+      <img src="{{music.songThumbnail.url}}" class="song-img w-100"  />
+      <h2>{{music.songname}}</h2>
+      <h4>{{music.album}}</h4>
+      <p></p>
+
+      <audio id="song">
+        <source src="{{music.song.url}}" type="audio/mpeg" />
+      </audio>
+      <input type="range" id="progress" />
+      <div class="controls">
+        <div><a href="{% url 'prev' music.id %}"><i class="fa-solid fa-backward"></i></a></div>
+        <div onclick="playpause()">
+          <i class="fa-solid fa-pause" id="ctrlIcon"></i>
+        </div>
+        <div><a href="{% url 'next' music.id %}"><i class="fa-solid fa-forward"></i></a></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let progress = document.getElementById("progress");
+    let song = document.getElementById("song");
+    let ctrlIcon = document.getElementById("ctrlIcon");
+    let playPromise;
+
+    song.onloadedmetadata = function () {
+      progress.max = song.duration;
+      progress.value = song.currentTime;
+    };
+
+    function playpause() {
+      if (ctrlIcon.classList.contains("fa-pause")) {
+        song.pause();
+        ctrlIcon.classList.remove("fa-pause");
+        ctrlIcon.classList.add("fa-play");
+      } else {
+        playPromise = song.play();
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              ctrlIcon.classList.add("fa-pause");
+              ctrlIcon.classList.remove("fa-play");
+            })
+            .catch(error => {
+              console.log("Autoplay was prevented:", error);
+            });
+        }
+      }
+    }
+
+    setInterval(() => {
+      progress.value = song.currentTime;
+    }, 500);
+
+    progress.onchange = function () {
+      song.play();
+      song.currentTime = progress.value;
+      ctrlIcon.classList.add("fa-pause");
+      ctrlIcon.classList.remove("fa-play");
+    };
+  </script>
+</body>
+</html>
